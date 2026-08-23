@@ -1,6 +1,7 @@
 package com.example.hiringsys.controller;
 
 import com.example.hiringsys.service.JwtService;
+import com.example.hiringsys.service.JwtRevocationService;
 import com.example.hiringsys.service.RecuperacaoSenhaService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -8,10 +9,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -24,15 +28,18 @@ class AuthControllerTest {
     @Mock private AuthenticationManager authenticationManager;
     @Mock private JwtService jwtService;
     @Mock private RecuperacaoSenhaService recuperacaoSenhaService;
+    @Mock private JwtRevocationService jwtRevocationService;
 
     private MockMvc mockMvc;
+    private AuthController controller;
 
     @BeforeEach
     void setUp() {
-        AuthController controller = new AuthController(
+        controller = new AuthController(
                 authenticationManager,
                 jwtService,
-                recuperacaoSenhaService
+                recuperacaoSenhaService,
+                jwtRevocationService
         );
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
     }
@@ -57,5 +64,15 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"email\":\"email-invalido\"}"))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void encerraSessaoAtual() {
+        Jwt jwt = org.mockito.Mockito.mock(Jwt.class);
+
+        ResponseEntity<Void> response = controller.logout(jwt);
+
+        assertThat(response.getStatusCode().value()).isEqualTo(204);
+        verify(jwtRevocationService).revogar(jwt);
     }
 }

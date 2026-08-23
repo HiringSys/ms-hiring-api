@@ -5,6 +5,7 @@ import com.example.hiringsys.dto.request.RecuperacaoSenhaRequest;
 import com.example.hiringsys.dto.response.LoginResponse;
 import com.example.hiringsys.dto.response.RecuperacaoSenhaResponse;
 import com.example.hiringsys.service.JwtService;
+import com.example.hiringsys.service.JwtRevocationService;
 import com.example.hiringsys.service.RecuperacaoSenhaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -16,6 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,15 +31,18 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final RecuperacaoSenhaService recuperacaoSenhaService;
+    private final JwtRevocationService jwtRevocationService;
 
     public AuthController(
             AuthenticationManager authenticationManager,
             JwtService jwtService,
-            RecuperacaoSenhaService recuperacaoSenhaService
+            RecuperacaoSenhaService recuperacaoSenhaService,
+            JwtRevocationService jwtRevocationService
     ) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.recuperacaoSenhaService = recuperacaoSenhaService;
+        this.jwtRevocationService = jwtRevocationService;
     }
 
     @PostMapping("/login")
@@ -82,5 +88,19 @@ public class AuthController {
                         "Se o e-mail estiver cadastrado, a nova senha será enviada."
                 )
         );
+    }
+
+    @PostMapping("/logout")
+    @Operation(
+            summary = "Encerra a sessão atual",
+            description = "Revoga o token Bearer utilizado na requisição até sua expiração."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Sessão encerrada"),
+            @ApiResponse(responseCode = "401", description = "Token ausente, inválido ou já revogado")
+    })
+    public ResponseEntity<Void> logout(@AuthenticationPrincipal Jwt jwt) {
+        jwtRevocationService.revogar(jwt);
+        return ResponseEntity.noContent().build();
     }
 }
