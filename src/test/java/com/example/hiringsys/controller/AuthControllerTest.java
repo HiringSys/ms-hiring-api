@@ -10,7 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 class AuthControllerTest {
 
-    @Mock private AuthenticationManager authenticationManager;
+    @Mock private DaoAuthenticationProvider databaseAuthenticationProvider;
     @Mock private JwtService jwtService;
     @Mock private RecuperacaoSenhaService recuperacaoSenhaService;
     @Mock private JwtRevocationService jwtRevocationService;
@@ -36,7 +36,7 @@ class AuthControllerTest {
     @BeforeEach
     void setUp() {
         controller = new AuthController(
-                authenticationManager,
+                databaseAuthenticationProvider,
                 jwtService,
                 recuperacaoSenhaService,
                 jwtRevocationService
