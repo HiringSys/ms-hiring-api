@@ -6,6 +6,7 @@ import com.example.hiringsys.dto.request.FuncionarioCreateRequest;
 import com.example.hiringsys.dto.request.FuncionarioUpdateRequest;
 import com.example.hiringsys.dto.response.FuncionarioResponse;
 import com.example.hiringsys.entity.Funcionario;
+import com.example.hiringsys.enums.ExperienciaFuncionario;
 import com.example.hiringsys.enums.StatusFuncionario;
 import com.example.hiringsys.mapper.FuncionarioMapper;
 import com.example.hiringsys.service.FuncionarioService;
@@ -80,6 +81,28 @@ public class FuncionarioController {
     @GetMapping("/cargo/{cargoId}")
     public ResponseEntity<List<FuncionarioResponse>> buscarPorCargo(@PathVariable Long cargoId) {
         List<FuncionarioResponse> funcionarios = service.buscarPorCargo(cargoId)
+                .stream()
+                .map(mapper::toResponse)
+                .toList();
+
+        return ResponseEntity.ok(funcionarios);
+    }
+
+    @GetMapping("/grupo/{grupoId}")
+    public ResponseEntity<List<FuncionarioResponse>> buscarPorGrupo(@PathVariable Long grupoId) {
+        List<FuncionarioResponse> funcionarios = service.buscarPorGrupo(grupoId)
+                .stream()
+                .map(mapper::toResponse)
+                .toList();
+
+        return ResponseEntity.ok(funcionarios);
+    }
+
+    @GetMapping("/experiencia/{experiencia}")
+    public ResponseEntity<List<FuncionarioResponse>> buscarPorExperiencia(
+            @PathVariable ExperienciaFuncionario experiencia
+    ) {
+        List<FuncionarioResponse> funcionarios = service.buscarPorExperiencia(experiencia)
                 .stream()
                 .map(mapper::toResponse)
                 .toList();

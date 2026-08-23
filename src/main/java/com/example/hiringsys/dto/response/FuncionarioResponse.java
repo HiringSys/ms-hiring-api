@@ -1,9 +1,11 @@
 package com.example.hiringsys.dto.response;
 
+import com.example.hiringsys.enums.ExperienciaFuncionario;
 import com.example.hiringsys.enums.StatusFuncionario;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 public record FuncionarioResponse(
         Long id,
@@ -13,7 +15,10 @@ public record FuncionarioResponse(
         BigDecimal salario,
         String cidade,
         StatusFuncionario status,
-        CargoResponse cargo,
+        ExperienciaFuncionario experiencia,
+        Set<CargoResponse> cargos,
+        Set<GrupoResponse> grupos,
+        Set<RedeResponse> redes,
         LocalDateTime criadoEm,
         LocalDateTime atualizadoEm
 ) {
