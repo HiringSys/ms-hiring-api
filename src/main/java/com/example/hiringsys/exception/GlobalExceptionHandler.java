@@ -148,6 +148,21 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(EmailDeliveryException.class)
+    public ResponseEntity<ApiErrorResponse> tratarFalhaDeEmail(
+            EmailDeliveryException exception,
+            HttpServletRequest request
+    ) {
+        LOGGER.error("Falha no envio de e-mail ao processar {}", request.getRequestURI(), exception);
+        return criarResposta(
+                HttpStatus.BAD_GATEWAY,
+                "Falha no envio de e-mail",
+                exception.getMessage(),
+                request.getRequestURI(),
+                List.of()
+        );
+    }
+
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ApiErrorResponse> tratarFalhaDeAutenticacao(
             AuthenticationException exception,
