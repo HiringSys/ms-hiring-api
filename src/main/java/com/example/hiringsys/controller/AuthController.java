@@ -30,10 +30,11 @@ public class AuthController {
     @SecurityRequirements
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.username(), request.password())
+                new UsernamePasswordAuthenticationToken(request.email(), request.password())
         );
 
         String perfil = authentication.getAuthorities().stream()
+                .filter(authority -> authority.getAuthority().startsWith("ROLE_"))
                 .findFirst()
                 .map(authority -> authority.getAuthority().replaceFirst("^ROLE_", ""))
                 .orElse("");

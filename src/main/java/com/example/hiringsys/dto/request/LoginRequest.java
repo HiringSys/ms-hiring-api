@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.constraints.NotBlank;
 
 public record LoginRequest(
-        @NotBlank(message = "O usuário é obrigatório")
-        @JsonAlias("email") String username,
+        @NotBlank(message = "O e-mail é obrigatório")
+        @JsonAlias("username") String email,
 
         @NotBlank(message = "A senha é obrigatória")
         String password

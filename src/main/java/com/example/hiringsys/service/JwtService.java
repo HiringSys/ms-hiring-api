@@ -31,6 +31,7 @@ public class JwtService {
         Instant agora = Instant.now();
         String scopes = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
+                .filter(authority -> authority.startsWith("ROLE_"))
                 .map(authority -> authority.replaceFirst("^ROLE_", ""))
                 .collect(Collectors.joining(" "));
 
