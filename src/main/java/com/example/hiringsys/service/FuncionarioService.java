@@ -55,6 +55,12 @@ public class FuncionarioService {
     @Transactional(readOnly = true)
     public List<Funcionario> buscarPorCargo(Long cargoId) { return repository.findByCargo(buscarCargo(cargoId)); }
 
+    @Transactional(readOnly = true)
+    public List<Funcionario> buscarPorGrupo(Long grupoId) {
+        buscarGrupo(grupoId);
+        return repository.findByGrupoId(grupoId);
+    }
+
     @Transactional
     public Funcionario salvar(Funcionario funcionario) {
         funcionario.setId(null);
@@ -98,6 +104,7 @@ public class FuncionarioService {
             validarEmailAtualizado(email, id);
             funcionario.setEmail(email);
         }
+
         if (campos.containsKey("salario")) {
             BigDecimal salario = (BigDecimal) campos.get("salario");
             validarSalario(salario);
@@ -158,6 +165,16 @@ public class FuncionarioService {
                 .orElseThrow(() -> new ResourceNotFoundException("Cargo não encontrado: " + id));
     }
 
+    private Grupo buscarGrupo(Long id) {
+        return grupoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Grupo não encontrado: " + id));
+    }
+
+    private Rede buscarRede(Long id) {
+        return redeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Rede não encontrada: " + id));
+    }
+
     private void validarEmailNovo(String email) {
         if (repository.existsByEmailIgnoreCase(email)) throw new BusinessRuleException("E-mail já cadastrado: " + email);
     }
@@ -168,6 +185,31 @@ public class FuncionarioService {
 
     private void validarSalario(BigDecimal salario) {
         if (salario != null && salario.signum() < 0) throw new BusinessRuleException("O salário não pode ser negativo");
+    }
+
+    private ExperienciaFuncionario valorExperiencia(Object valor) {
+        if (valor == null) throw new BusinessRuleException("A experiência não pode ser nula");
+        try {
+            return ExperienciaFuncionario.valueOf(valor.toString());
+        } catch (IllegalArgumentException exception) {
+            throw new BusinessRuleException("Experiência de funcionário inválida: " + valor);
+        }
+    }
+
+    private Set<Long> extrairIds(Object valor, String campo) {
+        if (!(valor instanceof Iterable<?> valores)) {
+            throw new BusinessRuleException("O campo " + campo + " deve ser uma lista de IDs");
+        }
+
+        Set<Long> ids = new LinkedHashSet<>();
+        for (Object item : valores) {
+            try {
+                ids.add(Long.valueOf(item.toString()));
+            } catch (NullPointerException | NumberFormatException exception) {
+                throw new BusinessRuleException("O campo " + campo + " deve conter apenas IDs numéricos");
+            }
+        }
+        return ids;
     }
 
     private void atualizarStatus(Funcionario funcionario, StatusFuncionario novoStatus) {

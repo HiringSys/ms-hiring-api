@@ -89,4 +89,31 @@ public class FuncionarioMapper {
         funcionario.setRedes(entidadesRede);
         return funcionario;
     }
+
+    private Set<Cargo> criarCargos(Set<Long> ids) {
+        if (ids == null) return new LinkedHashSet<>();
+        return ids.stream().map(id -> {
+            Cargo cargo = new Cargo();
+            cargo.setId(id);
+            return cargo;
+        }).collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    private Set<Grupo> criarGrupos(Set<Long> ids) {
+        if (ids == null) return new LinkedHashSet<>();
+        return ids.stream().map(id -> {
+            Grupo grupo = new Grupo();
+            grupo.setId(id);
+            return grupo;
+        }).collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    private Set<Rede> criarRedes(Set<Long> ids) {
+        if (ids == null) return new LinkedHashSet<>();
+        return ids.stream().map(id -> {
+            Rede rede = new Rede();
+            rede.setId(id);
+            return rede;
+        }).collect(Collectors.toCollection(LinkedHashSet::new));
+    }
 }

@@ -1,3 +1,4 @@
+package com.example.hiringsys.config;
 
 package com.example.hiringsys.config;
 

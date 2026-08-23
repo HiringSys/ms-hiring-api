@@ -60,6 +60,8 @@ public class SecurityConfig {
                         .hasAuthority("SCOPE_ADMIN")
                         .requestMatchers("/funcionarios/**", "/grupos/**")
                         .hasAnyAuthority("SCOPE_RH", "SCOPE_ADMIN")
+                        .requestMatchers("/usuarios/**")
+                        .hasAuthority("SCOPE_ADMIN")
                         .anyRequest()
                         .authenticated()
                 )
