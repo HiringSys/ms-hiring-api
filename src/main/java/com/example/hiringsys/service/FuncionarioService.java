@@ -4,6 +4,7 @@ import com.example.hiringsys.entity.Cargo;
 import com.example.hiringsys.entity.Funcionario;
 import com.example.hiringsys.enums.StatusFuncionario;
 import com.example.hiringsys.exception.BusinessRuleException;
+import com.example.hiringsys.exception.InvalidStatusTransitionException;
 import com.example.hiringsys.exception.ResourceNotFoundException;
 import com.example.hiringsys.repository.CargoRepository;
 import com.example.hiringsys.repository.FuncionarioRepository;
@@ -58,9 +59,7 @@ public class FuncionarioService {
         validarEmailNovo(funcionario.getEmail());
         validarSalario(funcionario.getSalario());
         funcionario.setCargo(validarCargo(funcionario.getCargo()));
-        if (funcionario.getStatus() == null) {
-            funcionario.setStatus(StatusFuncionario.EM_ANALISE);
-        }
+        funcionario.setStatus(StatusFuncionario.EM_ANALISE);
         LocalDateTime agora = LocalDateTime.now();
         funcionario.setCriadoEm(agora);
         funcionario.setAtualizadoEm(agora);
@@ -78,7 +77,9 @@ public class FuncionarioService {
         funcionario.setTelefone(dados.getTelefone());
         funcionario.setSalario(dados.getSalario());
         funcionario.setCidade(dados.getCidade());
-        funcionario.setStatus(dados.getStatus() == null ? StatusFuncionario.EM_ANALISE : dados.getStatus());
+        if (dados.getStatus() != null) {
+            atualizarStatus(funcionario, dados.getStatus());
+        }
         funcionario.setCargo(validarCargo(dados.getCargo()));
         funcionario.setAtualizadoEm(LocalDateTime.now());
         return repository.save(funcionario);
@@ -102,7 +103,7 @@ public class FuncionarioService {
             funcionario.setSalario(salario);
         }
         if (campos.containsKey("status")) {
-            funcionario.setStatus(valorStatus(campos.get("status")));
+            atualizarStatus(funcionario, valorStatus(campos.get("status")));
         }
         if (campos.containsKey("cargo")) {
             funcionario.setCargo(buscarCargo(extrairCargoId(campos.get("cargo"))));
@@ -176,6 +177,29 @@ public class FuncionarioService {
         } catch (IllegalArgumentException ex) {
             throw new BusinessRuleException("Status de funcionário inválido: " + valor);
         }
+    }
+
+    private void atualizarStatus(Funcionario funcionario, StatusFuncionario novoStatus) {
+        StatusFuncionario statusAtual = funcionario.getStatus();
+
+        if (statusAtual == novoStatus) {
+            return;
+        }
+
+        boolean transicaoPermitida = switch (statusAtual) {
+            case EM_ANALISE -> novoStatus == StatusFuncionario.APROVADO
+                    || novoStatus == StatusFuncionario.REPROVADO;
+            case APROVADO -> novoStatus == StatusFuncionario.CONTRATADO;
+            case REPROVADO, CONTRATADO -> false;
+        };
+
+        if (!transicaoPermitida) {
+            throw new InvalidStatusTransitionException(
+                    "Não é possível alterar o status de " + statusAtual + " para " + novoStatus
+            );
+        }
+
+        funcionario.setStatus(novoStatus);
     }
 
     private Long extrairCargoId(Object valor) {
