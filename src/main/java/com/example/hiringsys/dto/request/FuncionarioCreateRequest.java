@@ -19,6 +19,7 @@ public record FuncionarioCreateRequest(
         @PositiveOrZero BigDecimal salario,
         @Size(max = 100) String cidade,
         ExperienciaFuncionario experiencia,
+        @PositiveOrZero Integer anosExperiencia,
         Set<@Positive Long> cargoIds,
         List<@Valid RedeRequest> redes
 ) {}
