@@ -58,7 +58,7 @@ public class SecurityConfig {
                         .hasAnyAuthority("SCOPE_RH", "SCOPE_ADMIN")
                         .requestMatchers("/cargos/**")
                         .hasAuthority("SCOPE_ADMIN")
-                        .requestMatchers("/funcionarios/**", "/grupos/**")
+                        .requestMatchers("/funcionarios/**", "/grupos/**", "/stages/**")
                         .hasAnyAuthority("SCOPE_RH", "SCOPE_ADMIN")
                         .requestMatchers("/usuarios/**")
                         .hasAuthority("SCOPE_ADMIN")
