@@ -6,18 +6,28 @@ import com.example.hiringsys.dto.request.FuncionarioUpdateRequest;
 import com.example.hiringsys.dto.response.FuncionarioResponse;
 import com.example.hiringsys.entity.Cargo;
 import com.example.hiringsys.entity.Funcionario;
+import com.example.hiringsys.entity.Grupo;
+import com.example.hiringsys.entity.Rede;
+import com.example.hiringsys.enums.ExperienciaFuncionario;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class FuncionarioMapper {
 
     private final CargoMapper cargoMapper;
+    private final GrupoMapper grupoMapper;
+    private final RedeMapper redeMapper;
 
-    public FuncionarioMapper(CargoMapper cargoMapper) {
+    public FuncionarioMapper(CargoMapper cargoMapper, GrupoMapper grupoMapper, RedeMapper redeMapper) {
         this.cargoMapper = cargoMapper;
+        this.grupoMapper = grupoMapper;
+        this.redeMapper = redeMapper;
     }
 
     public Funcionario toEntity(FuncionarioCreateRequest request) {
@@ -27,7 +37,10 @@ public class FuncionarioMapper {
                 request.telefone(),
                 request.salario(),
                 request.cidade(),
-                request.cargoId()
+                request.experiencia(),
+                request.cargoIds(),
+                request.grupoIds(),
+                request.redeIds()
         );
 
         return funcionario;
@@ -40,7 +53,10 @@ public class FuncionarioMapper {
                 request.telefone(),
                 request.salario(),
                 request.cidade(),
-                request.cargoId()
+                request.experiencia(),
+                request.cargoIds(),
+                request.grupoIds(),
+                request.redeIds()
         );
         funcionario.setStatus(request.status());
         return funcionario;
@@ -55,7 +71,10 @@ public class FuncionarioMapper {
         if (request.salario() != null) campos.put("salario", request.salario());
         if (request.cidade() != null) campos.put("cidade", request.cidade());
         if (request.status() != null) campos.put("status", request.status().name());
-        if (request.cargoId() != null) campos.put("cargo", request.cargoId());
+        if (request.experiencia() != null) campos.put("experiencia", request.experiencia().name());
+        if (request.cargoIds() != null) campos.put("cargoIds", request.cargoIds());
+        if (request.grupoIds() != null) campos.put("grupoIds", request.grupoIds());
+        if (request.redeIds() != null) campos.put("redeIds", request.redeIds());
 
         return campos;
     }
@@ -69,7 +88,16 @@ public class FuncionarioMapper {
                 funcionario.getSalario(),
                 funcionario.getCidade(),
                 funcionario.getStatus(),
-                cargoMapper.toResponse(funcionario.getCargo()),
+                funcionario.getExperiencia(),
+                funcionario.getCargos().stream()
+                        .map(cargoMapper::toResponse)
+                        .collect(Collectors.toCollection(LinkedHashSet::new)),
+                funcionario.getGrupos().stream()
+                        .map(grupoMapper::toResponse)
+                        .collect(Collectors.toCollection(LinkedHashSet::new)),
+                funcionario.getRedes().stream()
+                        .map(redeMapper::toResponse)
+                        .collect(Collectors.toCollection(LinkedHashSet::new)),
                 funcionario.getCriadoEm(),
                 funcionario.getAtualizadoEm()
         );
@@ -81,18 +109,48 @@ public class FuncionarioMapper {
             String telefone,
             java.math.BigDecimal salario,
             String cidade,
-            Long cargoId
+            ExperienciaFuncionario experiencia,
+            Set<Long> cargoIds,
+            Set<Long> grupoIds,
+            Set<Long> redeIds
     ) {
-        Cargo cargo = new Cargo();
-        cargo.setId(cargoId);
-
         Funcionario funcionario = new Funcionario();
         funcionario.setNome(nome);
         funcionario.setEmail(email);
         funcionario.setTelefone(telefone);
         funcionario.setSalario(salario);
         funcionario.setCidade(cidade);
-        funcionario.setCargo(cargo);
+        funcionario.setExperiencia(experiencia);
+        funcionario.setCargos(criarCargos(cargoIds));
+        funcionario.setGrupos(criarGrupos(grupoIds));
+        funcionario.setRedes(criarRedes(redeIds));
         return funcionario;
+    }
+
+    private Set<Cargo> criarCargos(Set<Long> ids) {
+        if (ids == null) return new LinkedHashSet<>();
+        return ids.stream().map(id -> {
+            Cargo cargo = new Cargo();
+            cargo.setId(id);
+            return cargo;
+        }).collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    private Set<Grupo> criarGrupos(Set<Long> ids) {
+        if (ids == null) return new LinkedHashSet<>();
+        return ids.stream().map(id -> {
+            Grupo grupo = new Grupo();
+            grupo.setId(id);
+            return grupo;
+        }).collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    private Set<Rede> criarRedes(Set<Long> ids) {
+        if (ids == null) return new LinkedHashSet<>();
+        return ids.stream().map(id -> {
+            Rede rede = new Rede();
+            rede.setId(id);
+            return rede;
+        }).collect(Collectors.toCollection(LinkedHashSet::new));
     }
 }

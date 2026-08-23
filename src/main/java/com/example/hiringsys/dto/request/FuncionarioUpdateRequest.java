@@ -1,14 +1,17 @@
 package com.example.hiringsys.dto.request;
 
+import com.example.hiringsys.enums.ExperienciaFuncionario;
 import com.example.hiringsys.enums.StatusFuncionario;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 public record FuncionarioUpdateRequest(
         @NotBlank(message = "O nome do funcionário é obrigatório")
@@ -32,8 +35,14 @@ public record FuncionarioUpdateRequest(
         @NotNull(message = "O status é obrigatório")
         StatusFuncionario status,
 
-        @NotNull(message = "O cargo é obrigatório")
-        @Positive(message = "O ID do cargo deve ser positivo")
-        Long cargoId
+        @NotNull(message = "A experiência é obrigatória")
+        ExperienciaFuncionario experiencia,
+
+        @NotEmpty(message = "Ao menos um cargo é obrigatório")
+        Set<@Positive(message = "O ID do cargo deve ser positivo") Long> cargoIds,
+
+        Set<@Positive(message = "O ID do grupo deve ser positivo") Long> grupoIds,
+
+        Set<@Positive(message = "O ID da rede deve ser positivo") Long> redeIds
 ) {
 }
