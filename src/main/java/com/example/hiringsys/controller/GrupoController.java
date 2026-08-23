@@ -1,80 +1,32 @@
 package com.example.hiringsys.controller;
 
-import com.example.hiringsys.dto.request.GrupoRequest;
-import com.example.hiringsys.dto.response.GrupoResponse;
-import com.example.hiringsys.entity.Grupo;
+import com.example.hiringsys.dto.request.*;
+import com.example.hiringsys.dto.response.*;
+import com.example.hiringsys.entity.*;
 import com.example.hiringsys.enums.EstadoGrupo;
-import com.example.hiringsys.mapper.GrupoMapper;
 import com.example.hiringsys.service.GrupoService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
+import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.util.List;
 
-@RestController
-@RequestMapping("/grupos")
+@RestController @RequestMapping("/grupos") @Tag(name="Grupos")
 public class GrupoController {
-
     private final GrupoService service;
-    private final GrupoMapper mapper;
-
-    public GrupoController(GrupoService service, GrupoMapper mapper) {
-        this.service = service;
-        this.mapper = mapper;
-    }
-
-    @GetMapping
-    public ResponseEntity<List<GrupoResponse>> listarTodos() {
-        return ResponseEntity.ok(service.listarTodos().stream().map(mapper::toResponse).toList());
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<GrupoResponse> buscarPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(mapper.toResponse(service.buscarPorId(id)));
-    }
-
-    @GetMapping("/buscar")
-    public ResponseEntity<List<GrupoResponse>> buscarPorNome(@RequestParam String nome) {
-        return ResponseEntity.ok(service.buscarPorNome(nome).stream().map(mapper::toResponse).toList());
-    }
-
-    @GetMapping("/estado/{estado}")
-    public ResponseEntity<List<GrupoResponse>> buscarPorEstado(@PathVariable EstadoGrupo estado) {
-        return ResponseEntity.ok(service.buscarPorEstado(estado).stream().map(mapper::toResponse).toList());
-    }
-
-    @PostMapping
-    public ResponseEntity<GrupoResponse> cadastrar(@Valid @RequestBody GrupoRequest request) {
-        Grupo salvo = service.salvar(mapper.toEntity(request));
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(salvo.getId())
-                .toUri();
-        return ResponseEntity.created(location).body(mapper.toResponse(salvo));
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<GrupoResponse> atualizar(
-            @PathVariable Long id,
-            @Valid @RequestBody GrupoRequest request
-    ) {
-        return ResponseEntity.ok(mapper.toResponse(service.atualizar(id, mapper.toEntity(request))));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> excluir(@PathVariable Long id) {
-        service.excluir(id);
-        return ResponseEntity.noContent().build();
-    }
+    public GrupoController(GrupoService service){this.service=service;}
+    @GetMapping public List<GrupoResponse> listar(@RequestParam(required=false) String nome,@RequestParam(required=false) EstadoGrupo estado){List<Grupo> grupos=nome!=null?service.buscarPorNome(nome):estado!=null?service.buscarPorEstado(estado):service.listarTodos();return grupos.stream().map(this::grupoResponse).toList();}
+    @GetMapping("/{id}") public GrupoResponse buscar(@PathVariable Long id){return grupoResponse(service.buscarPorId(id));}
+    @PostMapping public ResponseEntity<GrupoResponse> criar(@Valid @RequestBody GrupoRequest request){Grupo salvo=service.salvar(toEntity(request));return ResponseEntity.created(URI.create("/grupos/"+salvo.getId())).body(grupoResponse(salvo));}
+    @PutMapping("/{id}") public GrupoResponse atualizar(@PathVariable Long id,@Valid @RequestBody GrupoRequest request){return grupoResponse(service.atualizar(id,toEntity(request)));}
+    @DeleteMapping("/{id}") public ResponseEntity<Void> excluir(@PathVariable Long id){service.excluir(id);return ResponseEntity.noContent().build();}
+    @GetMapping("/{id}/funcionarios") @Operation(summary="Lista funcionários e seus scores no grupo") public List<IntegranteGrupoResponse> listarFuncionarios(@PathVariable Long id){return service.listarFuncionarios(id).stream().map(this::vinculoResponse).toList();}
+    @PostMapping("/{id}/funcionarios") @Operation(summary="Vincula um funcionário ao grupo; o score pode ser nulo") public ResponseEntity<IntegranteGrupoResponse> vincular(@PathVariable Long id,@Valid @RequestBody VinculoGrupoFuncionarioRequest request){GrupoFuncionario salvo=service.vincular(id,request.funcionarioId(),request.scoreProximidade());return ResponseEntity.status(201).body(vinculoResponse(salvo));}
+    @PatchMapping("/{id}/funcionarios/{funcionarioId}/score") @Operation(summary="Atualiza ou limpa o score de proximidade") public IntegranteGrupoResponse atualizarScore(@PathVariable Long id,@PathVariable Long funcionarioId,@Valid @RequestBody ScoreProximidadeRequest request){return vinculoResponse(service.atualizarScore(id,funcionarioId,request.scoreProximidade()));}
+    @DeleteMapping("/{id}/funcionarios/{funcionarioId}") public ResponseEntity<Void> desvincular(@PathVariable Long id,@PathVariable Long funcionarioId){service.desvincular(id,funcionarioId);return ResponseEntity.noContent().build();}
+    private Grupo toEntity(GrupoRequest r){Grupo g=new Grupo();g.setNome(r.nome());g.setArea(r.area());g.setEstado(r.estado());g.setDisponiveis(r.disponiveis());g.setCargo(r.cargo());return g;}
+    private GrupoResponse grupoResponse(Grupo g){return new GrupoResponse(g.getId(),g.getNome(),g.getArea(),g.getEstado(),g.getDisponiveis(),g.getCargo(),g.getCriadoEm());}
+    private IntegranteGrupoResponse vinculoResponse(GrupoFuncionario v){return new IntegranteGrupoResponse(v.getFuncionario().getId(),v.getFuncionario().getNome(),v.getFuncionario().getEmail(),v.getScoreProximidade());}
 }

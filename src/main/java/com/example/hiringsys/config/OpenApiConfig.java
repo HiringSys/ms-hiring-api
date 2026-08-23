@@ -1,5 +1,7 @@
 package com.example.hiringsys.config;
 
+package com.example.hiringsys.config;
+
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
@@ -10,24 +12,14 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class OpenApiConfig {
-
-    private static final String SECURITY_SCHEME = "bearerAuth";
-
     @Bean
-    public OpenAPI hiringSystemOpenApi() {
+    public OpenAPI hiringSysOpenApi() {
+        String scheme = "bearerAuth";
         return new OpenAPI()
-                .info(new Info()
-                        .title("Hiring System API")
-                        .version("v1")
-                        .description("API para gerenciamento de candidatos e processos seletivos"))
-                .addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME))
-                .components(new Components().addSecuritySchemes(
-                        SECURITY_SCHEME,
-                        new SecurityScheme()
-                                .name(SECURITY_SCHEME)
-                                .type(SecurityScheme.Type.HTTP)
-                                .scheme("bearer")
-                                .bearerFormat("JWT")
-                ));
+                .info(new Info().title("HiringSys API").version("1.0")
+                        .description("API de funcionários, cargos, grupos, redes e arquivos privados."))
+                .addSecurityItem(new SecurityRequirement().addList(scheme))
+                .components(new Components().addSecuritySchemes(scheme,
+                        new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("JWT")));
     }
 }

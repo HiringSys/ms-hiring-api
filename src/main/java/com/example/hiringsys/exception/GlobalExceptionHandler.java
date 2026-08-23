@@ -133,6 +133,21 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(StorageException.class)
+    public ResponseEntity<ApiErrorResponse> tratarFalhaDeStorage(
+            StorageException exception,
+            HttpServletRequest request
+    ) {
+        LOGGER.error("Falha no storage ao processar {}", request.getRequestURI(), exception);
+        return criarResposta(
+                HttpStatus.BAD_GATEWAY,
+                "Falha no armazenamento",
+                exception.getMessage(),
+                request.getRequestURI(),
+                List.of()
+        );
+    }
+
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ApiErrorResponse> tratarFalhaDeAutenticacao(
             AuthenticationException exception,
