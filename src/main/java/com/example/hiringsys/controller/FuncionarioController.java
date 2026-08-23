@@ -9,6 +9,8 @@ import com.example.hiringsys.entity.Funcionario;
 import com.example.hiringsys.enums.StatusFuncionario;
 import com.example.hiringsys.mapper.FuncionarioMapper;
 import com.example.hiringsys.service.FuncionarioService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,6 +31,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/funcionarios")
+@Tag(name = "Funcionários", description = "Cadastro e processo seletivo de funcionários")
 public class FuncionarioController {
 
     private final FuncionarioService service;
@@ -88,6 +91,7 @@ public class FuncionarioController {
     }
 
     @PostMapping
+    @Operation(summary = "Cadastra um funcionário com cargos e redes")
     public ResponseEntity<FuncionarioResponse> cadastrar(
             @Valid @RequestBody FuncionarioCreateRequest request
     ) {
@@ -126,6 +130,7 @@ public class FuncionarioController {
     }
 
     @PatchMapping("/{id}/status")
+    @Operation(summary = "Avança o status respeitando as transições permitidas")
     public ResponseEntity<FuncionarioResponse> atualizarStatus(
             @PathVariable Long id,
             @Valid @RequestBody AtualizarStatusRequest request

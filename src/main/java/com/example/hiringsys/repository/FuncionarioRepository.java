@@ -23,8 +23,11 @@ public interface FuncionarioRepository extends JpaRepository<Funcionario, Long> 
     boolean existsByEmailIgnoreCase(String email);
     boolean existsByEmailIgnoreCaseAndIdNot(String email, Long id);
     Optional<Funcionario> findByEmailIgnoreCase(String email);
+    @EntityGraph(attributePaths = {"cargos", "redes", "grupos", "grupos.grupo", "arquivos"})
     List<Funcionario> findByNomeContainingIgnoreCase(String nome);
+    @EntityGraph(attributePaths = {"cargos", "redes", "grupos", "grupos.grupo", "arquivos"})
     List<Funcionario> findByStatus(StatusFuncionario status);
+    @EntityGraph(attributePaths = {"cargos", "redes", "grupos", "grupos.grupo", "arquivos"})
     @Query("select distinct f from Funcionario f join f.cargos c where c = :cargo")
     List<Funcionario> findByCargo(@Param("cargo") Cargo cargo);
 }
