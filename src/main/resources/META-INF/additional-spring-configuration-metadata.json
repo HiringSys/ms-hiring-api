@@ -1,0 +1,37 @@
+{"properties": [
+  {
+    "name": "app.security.admin.username",
+    "type": "java.lang.String",
+    "description": "Username para o perfil de administrador do sistema Hire!"
+  },
+  {
+    "name": "app.security.rh.username",
+    "type": "java.lang.String",
+    "description": "A description for 'app.security.rh.username'"
+  },
+  {
+    "name": "app.security.admin.password",
+    "type": "java.lang.String",
+    "description": "A description for 'app.security.admin.password'"
+  },
+  {
+    "name": "app.security.rh.password",
+    "type": "java.lang.String",
+    "description": "A description for 'app.security.rh.password'"
+  },
+  {
+    "name": "app.security.jwt.secret",
+    "type": "java.lang.String",
+    "description": "A description for 'app.security.jwt.secret'"
+  },
+  {
+    "name": "app.security.jwt.expiration-seconds",
+    "type": "java.lang.String",
+    "description": "A description for 'app.security.jwt.expiration-seconds'"
+  },
+  {
+    "name": "app.frontend.origin",
+    "type": "java.lang.String",
+    "description": "A description for 'app.frontend.origin'"
+  }
+]}
