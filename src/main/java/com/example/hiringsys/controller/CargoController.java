@@ -61,18 +61,6 @@ public class CargoController {
         return ResponseEntity.ok(cargos);
     }
 
-    @GetMapping("/departamento/{departamentoId}")
-    public ResponseEntity<List<CargoResponse>> buscarPorDepartamento(
-            @PathVariable Long departamentoId
-    ) {
-        List<CargoResponse> cargos = service.buscarPorDepartamento(departamentoId)
-                .stream()
-                .map(mapper::toResponse)
-                .toList();
-
-        return ResponseEntity.ok(cargos);
-    }
-
     @PostMapping
     public ResponseEntity<CargoResponse> cadastrar(@Valid @RequestBody CargoRequest request) {
         Cargo cargo = mapper.toEntity(request);

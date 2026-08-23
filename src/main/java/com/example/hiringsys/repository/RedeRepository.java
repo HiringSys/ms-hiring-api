@@ -1,0 +1,2 @@
+package com.example.hiringsys.repository; import com.example.hiringsys.entity.Rede; import com.example.hiringsys.enums.TipoRede; import org.springframework.data.jpa.repository.JpaRepository; import java.util.*;
+public interface RedeRepository extends JpaRepository<Rede,Long>{ Optional<Rede> findByUrlIgnoreCase(String url); List<Rede> findByTipo(TipoRede tipo); boolean existsByUrlIgnoreCase(String url); boolean existsByUrlIgnoreCaseAndIdNot(String url,Long id); }
