@@ -21,6 +21,7 @@ public record FuncionarioPatchRequest(
         @Size(max = 100) String cidade,
         StatusFuncionario status,
         ExperienciaFuncionario experiencia,
+        @PositiveOrZero Integer anosExperiencia,
         Set<@Positive Long> cargoIds,
         List<@Valid RedeRequest> redes
 ) {}

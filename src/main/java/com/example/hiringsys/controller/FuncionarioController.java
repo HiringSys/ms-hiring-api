@@ -158,7 +158,7 @@ public class FuncionarioController {
             @PathVariable Long id,
             @Valid @RequestBody AtualizarStatusRequest request
     ) {
-        Map<String, Object> campoStatus = Map.of("status", request.status().name());
+        Map<String, Object> campoStatus = Map.of("status", request.status());
         Funcionario atualizado = service.atualizarParcial(id, campoStatus);
         return ResponseEntity.ok(mapper.toResponse(atualizado));
     }

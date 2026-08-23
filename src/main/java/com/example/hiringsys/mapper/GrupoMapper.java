@@ -15,6 +15,8 @@ public class GrupoMapper {
         grupo.setEstado(request.estado());
         grupo.setDisponiveis(request.disponiveis());
         grupo.setCargo(request.cargo());
+        grupo.setLimiteAprovados(request.limiteAprovados());
+        grupo.setEmailEquipe(request.emailEquipe());
         return grupo;
     }
 
@@ -26,6 +28,8 @@ public class GrupoMapper {
                 grupo.getEstado(),
                 grupo.getDisponiveis(),
                 grupo.getCargo(),
+                grupo.getLimiteAprovados(),
+                grupo.getEmailEquipe(),
                 grupo.getCriadoEm()
         );
     }

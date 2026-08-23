@@ -2,20 +2,19 @@ package com.example.hiringsys.config;
 
 import com.example.hiringsys.security.JwtAccessDeniedHandler;
 import com.example.hiringsys.security.JwtAuthenticationEntryPoint;
+import com.example.hiringsys.service.UsuarioService;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -23,7 +22,6 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -41,16 +39,22 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             JwtAuthenticationEntryPoint authenticationEntryPoint,
-            JwtAccessDeniedHandler accessDeniedHandler
+            JwtAccessDeniedHandler accessDeniedHandler,
+            AuthenticationManager authenticationManager
     ) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
+                .authenticationManager(authenticationManager)
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(HttpMethod.POST, "/auth/login")
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/auth/login",
+                                "/auth/password-recovery"
+                        )
                         .permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**")
                         .permitAll()
@@ -58,7 +62,7 @@ public class SecurityConfig {
                         .hasAnyAuthority("SCOPE_RH", "SCOPE_ADMIN")
                         .requestMatchers("/cargos/**")
                         .hasAuthority("SCOPE_ADMIN")
-                        .requestMatchers("/funcionarios/**", "/grupos/**")
+                        .requestMatchers("/funcionarios/**", "/grupos/**", "/stages/**")
                         .hasAnyAuthority("SCOPE_RH", "SCOPE_ADMIN")
                         .requestMatchers("/usuarios/**")
                         .hasAuthority("SCOPE_ADMIN")
@@ -78,36 +82,18 @@ public class SecurityConfig {
     }
 
     @Bean
-    public UserDetailsService userDetailsService(
-            @Value("${app.security.admin.username}") String adminUsername,
-            @Value("${app.security.admin.password}") String adminPassword,
-            @Value("${app.security.rh.username}") String rhUsername,
-            @Value("${app.security.rh.password}") String rhPassword,
-            PasswordEncoder passwordEncoder
-    ) {
-        UserDetails admin = User.withUsername(adminUsername)
-                .password(passwordEncoder.encode(adminPassword))
-                .roles("ADMIN")
-                .build();
-
-        UserDetails rh = User.withUsername(rhUsername)
-                .password(passwordEncoder.encode(rhPassword))
-                .roles("RH")
-                .build();
-
-        return new InMemoryUserDetailsManager(admin, rh);
-    }
-
-    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
     public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration authenticationConfiguration
-    ) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
+            UsuarioService usuarioService,
+            PasswordEncoder passwordEncoder
+    ) {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(usuarioService);
+        provider.setPasswordEncoder(passwordEncoder);
+        return new ProviderManager(provider);
     }
 
     @Bean

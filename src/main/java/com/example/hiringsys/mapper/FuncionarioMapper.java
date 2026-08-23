@@ -27,6 +27,7 @@ public class FuncionarioMapper {
         Funcionario funcionario = dadosComuns(request.nome(), request.email(), request.telefone(),
                 request.salario(), request.cidade(), request.cargoIds(), request.redes());
         funcionario.setExperiencia(request.experiencia());
+        funcionario.setAnosExperiencia(request.anosExperiencia());
         return funcionario;
     }
 
@@ -35,6 +36,7 @@ public class FuncionarioMapper {
                 request.salario(), request.cidade(), request.cargoIds(), request.redes());
         funcionario.setStatus(request.status());
         funcionario.setExperiencia(request.experiencia());
+        funcionario.setAnosExperiencia(request.anosExperiencia());
         return funcionario;
     }
 
@@ -47,6 +49,7 @@ public class FuncionarioMapper {
         if (request.cidade() != null) campos.put("cidade", request.cidade());
         if (request.status() != null) campos.put("status", request.status());
         if (request.experiencia() != null) campos.put("experiencia", request.experiencia());
+        if (request.anosExperiencia() != null) campos.put("anosExperiencia", request.anosExperiencia());
         if (request.cargoIds() != null) campos.put("cargoIds", request.cargoIds());
         if (request.redes() != null) campos.put("redes", request.redes());
         return campos;
@@ -68,7 +71,8 @@ public class FuncionarioMapper {
                 .toList();
         return new FuncionarioResponse(funcionario.getId(), funcionario.getNome(), funcionario.getEmail(),
                 funcionario.getTelefone(), funcionario.getSalario(), funcionario.getCidade(),
-                funcionario.getStatus(), funcionario.getExperiencia(), cargos, redes, grupos, arquivos,
+                funcionario.getStatus(), funcionario.getExperiencia(), funcionario.getAnosExperiencia(),
+                cargos, redes, grupos, arquivos,
                 funcionario.getCriadoEm(), funcionario.getAtualizadoEm());
     }
 

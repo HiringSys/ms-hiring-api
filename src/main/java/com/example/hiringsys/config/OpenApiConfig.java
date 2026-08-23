@@ -14,7 +14,7 @@ public class OpenApiConfig {
     public OpenAPI hiringSysOpenApi() {
         String scheme = "bearerAuth";
         return new OpenAPI()
-                .info(new Info().title("HiringSys API").version("1.0")
+                .info(new Info().title("HiringSys API").version("1.1")
                         .description("API de funcionários, cargos, grupos, redes e arquivos privados."))
                 .addSecurityItem(new SecurityRequirement().addList(scheme))
                 .components(new Components().addSecuritySchemes(scheme,

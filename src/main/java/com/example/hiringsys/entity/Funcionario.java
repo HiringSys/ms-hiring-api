@@ -54,6 +54,9 @@ public class Funcionario {
     @Column(name = "experiencia", nullable = false, length = 30)
     private ExperienciaFuncionario experiencia;
 
+    @Column(name = "anos_experiencia", nullable = false)
+    private Integer anosExperiencia;
+
     @ManyToMany
     @JoinTable(
             name = "cargo_funcionario",
@@ -87,6 +90,7 @@ public class Funcionario {
         LocalDateTime agora = LocalDateTime.now();
         if (status == null) status = StatusFuncionario.EM_ANALISE;
         if (experiencia == null) experiencia = ExperienciaFuncionario.SEM_EXPERIENCIA;
+        if (anosExperiencia == null) anosExperiencia = 0;
         if (criadoEm == null) criadoEm = agora;
         atualizadoEm = agora;
     }
@@ -110,6 +114,8 @@ public class Funcionario {
     public void setStatus(StatusFuncionario status) { this.status = status; }
     public ExperienciaFuncionario getExperiencia() { return experiencia; }
     public void setExperiencia(ExperienciaFuncionario experiencia) { this.experiencia = experiencia; }
+    public Integer getAnosExperiencia() { return anosExperiencia; }
+    public void setAnosExperiencia(Integer anosExperiencia) { this.anosExperiencia = anosExperiencia; }
     public Set<Cargo> getCargos() { return cargos; }
     public void setCargos(Set<Cargo> cargos) { this.cargos = cargos == null ? new LinkedHashSet<>() : cargos; }
     public Set<Rede> getRedes() { return redes; }

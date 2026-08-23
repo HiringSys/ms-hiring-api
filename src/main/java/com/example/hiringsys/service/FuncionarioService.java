@@ -82,6 +82,7 @@ public class FuncionarioService {
         if (funcionario.getExperiencia() == null) {
             funcionario.setExperiencia(ExperienciaFuncionario.SEM_EXPERIENCIA);
         }
+        if (funcionario.getAnosExperiencia() == null) funcionario.setAnosExperiencia(0);
         return repository.save(funcionario);
     }
 
@@ -97,6 +98,7 @@ public class FuncionarioService {
         funcionario.setCidade(dados.getCidade());
         atualizarStatus(funcionario, dados.getStatus());
         funcionario.setExperiencia(dados.getExperiencia());
+        funcionario.setAnosExperiencia(dados.getAnosExperiencia());
         funcionario.setCargos(resolverCargos(dados.getCargos()));
         funcionario.setRedes(resolverRedes(dados.getRedes()));
         return repository.save(funcionario);
@@ -122,6 +124,7 @@ public class FuncionarioService {
         }
         if (campos.containsKey("status")) atualizarStatus(funcionario, (StatusFuncionario) campos.get("status"));
         if (campos.containsKey("experiencia")) funcionario.setExperiencia((ExperienciaFuncionario) campos.get("experiencia"));
+        if (campos.containsKey("anosExperiencia")) funcionario.setAnosExperiencia((Integer) campos.get("anosExperiencia"));
         if (campos.containsKey("cargoIds")) {
             Set<Cargo> cargos = new LinkedHashSet<>();
             ((Set<Long>) campos.get("cargoIds")).forEach(cargoId -> { Cargo cargo = new Cargo(); cargo.setId(cargoId); cargos.add(cargo); });

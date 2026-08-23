@@ -23,6 +23,7 @@ public record FuncionarioUpdateRequest(
         @Size(max = 100) String cidade,
         @NotNull StatusFuncionario status,
         @NotNull ExperienciaFuncionario experiencia,
+        @NotNull @PositiveOrZero Integer anosExperiencia,
         @NotNull Set<@Positive Long> cargoIds,
         @NotNull List<@Valid RedeRequest> redes
 ) {}
