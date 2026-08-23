@@ -27,12 +27,14 @@ public class FuncionarioService {
     private final FuncionarioRepository repository;
     private final CargoRepository cargoRepository;
     private final RedeRepository redeRepository;
+    private final ArquivoFuncionarioService arquivoService;
 
     public FuncionarioService(FuncionarioRepository repository, CargoRepository cargoRepository,
-                              RedeRepository redeRepository) {
+                              RedeRepository redeRepository, ArquivoFuncionarioService arquivoService) {
         this.repository = repository;
         this.cargoRepository = cargoRepository;
         this.redeRepository = redeRepository;
+        this.arquivoService = arquivoService;
     }
 
     @Transactional(readOnly = true)
@@ -117,7 +119,11 @@ public class FuncionarioService {
     }
 
     @Transactional
-    public void excluir(Long id) { repository.delete(buscarPorId(id)); }
+    public void excluir(Long id) {
+        Funcionario funcionario = buscarPorId(id);
+        arquivoService.excluirTodosDoFuncionario(id);
+        repository.delete(funcionario);
+    }
 
     private Set<Cargo> resolverCargos(Set<Cargo> cargos) {
         Set<Cargo> resolvidos = new LinkedHashSet<>();
