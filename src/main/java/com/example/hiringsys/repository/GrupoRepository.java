@@ -1,0 +1,2 @@
+package com.example.hiringsys.repository; import com.example.hiringsys.entity.Grupo; import com.example.hiringsys.enums.EstadoGrupo; import org.springframework.data.jpa.repository.JpaRepository; import java.util.List;
+public interface GrupoRepository extends JpaRepository<Grupo,Long>{ List<Grupo> findByNomeContainingIgnoreCase(String nome); List<Grupo> findByEstado(EstadoGrupo estado); boolean existsByNomeIgnoreCase(String nome); boolean existsByNomeIgnoreCaseAndIdNot(String nome,Long id); }
