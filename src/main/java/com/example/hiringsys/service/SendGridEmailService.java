@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.util.HtmlUtils;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 
@@ -30,6 +31,7 @@ public class SendGridEmailService implements EmailService {
     private final String fromEmail;
     private final String fromName;
     private final Resource passwordRecoveryTemplate;
+    private final Resource candidateApprovedTemplate;
 
     public SendGridEmailService(
             HttpClient httpClient,
@@ -37,7 +39,8 @@ public class SendGridEmailService implements EmailService {
             @Value("${app.sendgrid.api-key:}") String apiKey,
             @Value("${app.sendgrid.from-email:}") String fromEmail,
             @Value("${app.sendgrid.from-name:HiringSys}") String fromName,
-            @Value("classpath:templates/email/password-recovery.html") Resource passwordRecoveryTemplate
+            @Value("classpath:templates/email/password-recovery.html") Resource passwordRecoveryTemplate,
+            @Value("classpath:templates/email/candidate-approved.html") Resource candidateApprovedTemplate
     ) {
         this.httpClient = httpClient;
         this.objectMapper = objectMapper;
@@ -45,6 +48,7 @@ public class SendGridEmailService implements EmailService {
         this.fromEmail = fromEmail;
         this.fromName = fromName;
         this.passwordRecoveryTemplate = passwordRecoveryTemplate;
+        this.candidateApprovedTemplate = candidateApprovedTemplate;
     }
 
     @Override
@@ -52,8 +56,68 @@ public class SendGridEmailService implements EmailService {
         validarConfiguracao();
 
         try {
-            String payload = montarPayload(destinatario, novaSenha);
+            String html = carregarTemplate(passwordRecoveryTemplate)
+                    .replace("{{NOVA_SENHA}}", HtmlUtils.htmlEscape(novaSenha));
+            enviar(
+                    destinatario,
+                    "Sua nova senha de acesso ao HiringSys",
+                    "Sua nova senha de acesso ao HiringSys é: " + novaSenha,
+                    html
+            );
+        } catch (IOException exception) {
+            throw new EmailDeliveryException("Não foi possível carregar o modelo do e-mail", exception);
+        }
+    }
 
+    @Override
+    public void enviarAprovacao(String destinatario, String nomeCandidato, String nomeProcesso) {
+        validarConfiguracao();
+
+        try {
+            enviarPayload(montarPayloadAprovacao(destinatario, nomeCandidato, nomeProcesso));
+        } catch (IOException exception) {
+            throw new EmailDeliveryException("Não foi possível carregar o modelo do e-mail", exception);
+        }
+    }
+
+    String montarPayload(String destinatario, String novaSenha) throws IOException {
+        String html = carregarTemplate(passwordRecoveryTemplate)
+                .replace("{{NOVA_SENHA}}", HtmlUtils.htmlEscape(novaSenha));
+        return montarPayload(
+                destinatario,
+                "Sua nova senha de acesso ao HiringSys",
+                "Sua nova senha de acesso ao HiringSys é: " + novaSenha,
+                html
+        );
+    }
+
+    String montarPayloadAprovacao(
+            String destinatario,
+            String nomeCandidato,
+            String nomeProcesso
+    ) throws IOException {
+        String html = carregarTemplate(candidateApprovedTemplate)
+                .replace("{{NOME_CANDIDATO}}", HtmlUtils.htmlEscape(nomeCandidato))
+                .replace("{{NOME_PROCESSO}}", HtmlUtils.htmlEscape(nomeProcesso));
+        return montarPayload(
+                destinatario,
+                "Aprovação no processo seletivo " + nomeProcesso,
+                "Olá, " + nomeCandidato + "! Você foi aprovado(a) no processo seletivo "
+                        + nomeProcesso + ". A equipe de RH entrará em contato com os próximos passos.",
+                html
+        );
+    }
+
+    private void enviar(String destinatario, String assunto, String texto, String html) {
+        try {
+            enviarPayload(montarPayload(destinatario, assunto, texto, html));
+        } catch (JacksonException exception) {
+            throw new EmailDeliveryException("Não foi possível preparar o e-mail", exception);
+        }
+    }
+
+    private void enviarPayload(String payload) {
+        try {
             HttpRequest request = HttpRequest.newBuilder(SENDGRID_MAIL_SEND_URI)
                     .timeout(Duration.ofSeconds(20))
                     .header("Authorization", "Bearer " + apiKey)
@@ -70,8 +134,6 @@ public class SendGridEmailService implements EmailService {
                         "O SendGrid recusou o envio do e-mail (status " + response.statusCode() + ")"
                 );
             }
-        } catch (JacksonException exception) {
-            throw new EmailDeliveryException("Não foi possível preparar o e-mail", exception);
         } catch (IOException exception) {
             throw new EmailDeliveryException("Não foi possível comunicar com o SendGrid", exception);
         } catch (InterruptedException exception) {
@@ -80,26 +142,27 @@ public class SendGridEmailService implements EmailService {
         }
     }
 
-    String montarPayload(String destinatario, String novaSenha) throws IOException {
-        String html = carregarTemplate().replace("{{NOVA_SENHA}}", novaSenha);
+    private String montarPayload(
+            String destinatario,
+            String assunto,
+            String texto,
+            String html
+    ) throws JacksonException {
         return objectMapper.writeValueAsString(Map.of(
                 "personalizations", List.of(Map.of(
                         "to", List.of(Map.of("email", destinatario))
                 )),
                 "from", Map.of("email", fromEmail, "name", fromName),
-                "subject", "Sua nova senha de acesso ao HiringSys",
+                "subject", assunto,
                 "content", List.of(
-                        Map.of(
-                                "type", "text/plain",
-                                "value", "Sua nova senha de acesso ao HiringSys é: " + novaSenha
-                        ),
+                        Map.of("type", "text/plain", "value", texto),
                         Map.of("type", "text/html", "value", html)
                 )
         ));
     }
 
-    private String carregarTemplate() throws IOException {
-        try (var inputStream = passwordRecoveryTemplate.getInputStream()) {
+    private String carregarTemplate(Resource template) throws IOException {
+        try (var inputStream = template.getInputStream()) {
             return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
         }
     }
