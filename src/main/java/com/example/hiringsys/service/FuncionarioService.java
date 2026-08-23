@@ -3,6 +3,7 @@ package com.example.hiringsys.service;
 import com.example.hiringsys.dto.request.RedeRequest;
 import com.example.hiringsys.entity.Cargo;
 import com.example.hiringsys.entity.Funcionario;
+import com.example.hiringsys.entity.Grupo;
 import com.example.hiringsys.entity.Rede;
 import com.example.hiringsys.enums.ExperienciaFuncionario;
 import com.example.hiringsys.enums.StatusFuncionario;
@@ -11,6 +12,7 @@ import com.example.hiringsys.exception.InvalidStatusTransitionException;
 import com.example.hiringsys.exception.ResourceNotFoundException;
 import com.example.hiringsys.repository.CargoRepository;
 import com.example.hiringsys.repository.FuncionarioRepository;
+import com.example.hiringsys.repository.GrupoRepository;
 import com.example.hiringsys.repository.RedeRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,13 +29,16 @@ public class FuncionarioService {
     private final FuncionarioRepository repository;
     private final CargoRepository cargoRepository;
     private final RedeRepository redeRepository;
+    private final GrupoRepository grupoRepository;
     private final ArquivoFuncionarioService arquivoService;
 
     public FuncionarioService(FuncionarioRepository repository, CargoRepository cargoRepository,
-                              RedeRepository redeRepository, ArquivoFuncionarioService arquivoService) {
+                              RedeRepository redeRepository, GrupoRepository grupoRepository,
+                              ArquivoFuncionarioService arquivoService) {
         this.repository = repository;
         this.cargoRepository = cargoRepository;
         this.redeRepository = redeRepository;
+        this.grupoRepository = grupoRepository;
         this.arquivoService = arquivoService;
     }
 
@@ -51,6 +56,11 @@ public class FuncionarioService {
 
     @Transactional(readOnly = true)
     public List<Funcionario> buscarPorStatus(StatusFuncionario status) { return repository.findByStatus(status); }
+
+    @Transactional(readOnly = true)
+    public List<Funcionario> buscarPorExperiencia(ExperienciaFuncionario experiencia) {
+        return repository.findByExperiencia(experiencia);
+    }
 
     @Transactional(readOnly = true)
     public List<Funcionario> buscarPorCargo(Long cargoId) { return repository.findByCargo(buscarCargo(cargoId)); }

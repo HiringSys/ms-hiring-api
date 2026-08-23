@@ -18,8 +18,8 @@ public class RedeMapper {
     public RedeResponse toResponse(Rede rede) {
         return new RedeResponse(
                 rede.getId(),
-                rede.getUrl(),
-                rede.getTipo()
+                rede.getTipo(),
+                rede.getUrl()
         );
     }
 }
