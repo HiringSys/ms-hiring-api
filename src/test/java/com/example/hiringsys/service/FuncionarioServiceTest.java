@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -62,6 +63,25 @@ class FuncionarioServiceTest {
                 .isInstanceOf(InvalidStatusTransitionException.class);
 
         verify(funcionarios, never()).save(funcionario);
+    }
+
+    @Test
+    void pesquisaSemFiltrosUsaTextosVaziosEmVezDeParametrosNulos() {
+        when(funcionarios.pesquisarSemStatus("", "")).thenReturn(List.of());
+
+        assertThat(service.pesquisar(null, "  ", null)).isEmpty();
+
+        verify(funcionarios).pesquisarSemStatus("", "");
+    }
+
+    @Test
+    void pesquisaComStatusUsaConsultaSemParametroDeStatusNulo() {
+        when(funcionarios.pesquisarPorStatus("Ana", "Java", StatusFuncionario.EM_ANALISE))
+                .thenReturn(List.of());
+
+        assertThat(service.pesquisar(" Ana ", " Java ", StatusFuncionario.EM_ANALISE)).isEmpty();
+
+        verify(funcionarios).pesquisarPorStatus("Ana", "Java", StatusFuncionario.EM_ANALISE);
     }
 
     private Funcionario funcionarioContratado() {

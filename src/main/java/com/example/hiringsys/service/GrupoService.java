@@ -7,7 +7,11 @@ import com.example.hiringsys.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class GrupoService {
@@ -23,6 +27,15 @@ public class GrupoService {
     @Transactional public Grupo atualizar(Long id,Grupo dados){Grupo grupo=buscarPorId(id);validar(dados,id);grupo.setNome(dados.getNome());grupo.setArea(dados.getArea());grupo.setEstado(dados.getEstado());grupo.setDisponiveis(dados.getDisponiveis());grupo.setCargo(dados.getCargo());grupo.setLimiteAprovados(dados.getLimiteAprovados()==null?grupo.getLimiteAprovados():dados.getLimiteAprovados());grupo.setEmailEquipe(dados.getEmailEquipe()==null?grupo.getEmailEquipe():dados.getEmailEquipe());return repository.save(grupo);}
     @Transactional public void excluir(Long id){repository.delete(buscarPorId(id));}
     @Transactional(readOnly=true) public List<GrupoFuncionario> listarFuncionarios(Long grupoId){buscarPorId(grupoId);return vinculos.findByGrupoId(grupoId);}
+    @Transactional(readOnly=true) public long contarParticipantes(Long grupoId){return vinculos.countByGrupoId(grupoId);}
+    @Transactional(readOnly=true) public Map<Long,Long> contarParticipantes(List<Grupo> grupos){
+        Set<Long> grupoIds=grupos.stream().map(Grupo::getId).collect(Collectors.toSet());
+        if(grupoIds.isEmpty())return Map.of();
+        Map<Long,Long> contagens=new LinkedHashMap<>();
+        vinculos.contarParticipantesPorGrupo(grupoIds).forEach(contagem ->
+                contagens.put(contagem.getGrupoId(),contagem.getQuantidade()));
+        return contagens;
+    }
     @Transactional public GrupoFuncionario vincular(Long grupoId,Long funcionarioId,BigDecimal score){Grupo grupo=buscarPorId(grupoId);Funcionario funcionario=funcionarios.findById(funcionarioId).orElseThrow(()->new ResourceNotFoundException("Funcionário não encontrado: "+funcionarioId));if(vinculos.existsByGrupoIdAndFuncionarioId(grupoId,funcionarioId))throw new BusinessRuleException("O funcionário já pertence a este grupo");validarScore(score);GrupoFuncionario vinculo=new GrupoFuncionario();vinculo.setGrupo(grupo);vinculo.setFuncionario(funcionario);vinculo.setScoreProximidade(score);return vinculos.save(vinculo);}
     @Transactional public GrupoFuncionario atualizarScore(Long grupoId,Long funcionarioId,BigDecimal score){validarScore(score);GrupoFuncionario vinculo=buscarVinculo(grupoId,funcionarioId);vinculo.setScoreProximidade(score);return vinculos.save(vinculo);}
     @Transactional public void desvincular(Long grupoId,Long funcionarioId){vinculos.delete(buscarVinculo(grupoId,funcionarioId));}

@@ -20,7 +20,7 @@ public class GrupoMapper {
         return grupo;
     }
 
-    public GrupoResponse toResponse(Grupo grupo) {
+    public GrupoResponse toResponse(Grupo grupo, long quantidadeParticipantes) {
         return new GrupoResponse(
                 grupo.getId(),
                 grupo.getNome(),
@@ -30,6 +30,7 @@ public class GrupoMapper {
                 grupo.getCargo(),
                 grupo.getLimiteAprovados(),
                 grupo.getEmailEquipe(),
+                quantidadeParticipantes,
                 grupo.getCriadoEm()
         );
     }

@@ -14,6 +14,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface GrupoFuncionarioRepository extends JpaRepository<GrupoFuncionario, Long> {
     List<GrupoFuncionario> findByFuncionarioId(Long funcionarioId);
@@ -23,6 +24,21 @@ public interface GrupoFuncionarioRepository extends JpaRepository<GrupoFuncionar
     Optional<GrupoFuncionario> findByGrupoIdAndFuncionarioId(Long grupoId, Long funcionarioId);
     boolean existsByGrupoIdAndFuncionarioId(Long grupoId, Long funcionarioId);
     long countByGrupoId(Long grupoId);
+
+    @Query("""
+            select vinculo.grupo.id as grupoId, count(vinculo.id) as quantidade
+            from GrupoFuncionario vinculo
+            where vinculo.grupo.id in :grupoIds
+            group by vinculo.grupo.id
+            """)
+    List<ContagemParticipantes> contarParticipantesPorGrupo(
+            @Param("grupoIds") Set<Long> grupoIds
+    );
+
+    interface ContagemParticipantes {
+        Long getGrupoId();
+        long getQuantidade();
+    }
 
     @Query("""
             select vinculo.id
