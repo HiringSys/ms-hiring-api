@@ -1,6 +1,7 @@
 package com.example.hiringsys.service;
 
 import com.example.hiringsys.dto.request.RedeRequest;
+import com.example.hiringsys.dto.response.FuncionarioIndicadoresResponse;
 import com.example.hiringsys.entity.Cargo;
 import com.example.hiringsys.entity.Funcionario;
 import com.example.hiringsys.entity.Grupo;
@@ -44,6 +45,22 @@ public class FuncionarioService {
 
     @Transactional(readOnly = true)
     public List<Funcionario> listarTodos() { return repository.findAll(); }
+
+    @Transactional(readOnly = true)
+    public List<Funcionario> pesquisar(String nome, String cargo, StatusFuncionario status) {
+        return repository.pesquisar(normalizarFiltro(nome), normalizarFiltro(cargo), status);
+    }
+
+    @Transactional(readOnly = true)
+    public FuncionarioIndicadoresResponse indicadores() {
+        return new FuncionarioIndicadoresResponse(
+                repository.count(),
+                repository.countByStatus(StatusFuncionario.EM_ANALISE),
+                repository.countByStatus(StatusFuncionario.APROVADO),
+                repository.countByStatus(StatusFuncionario.REPROVADO),
+                repository.countByStatus(StatusFuncionario.CONTRATADO)
+        );
+    }
 
     @Transactional(readOnly = true)
     public Funcionario buscarPorId(Long id) {
@@ -96,7 +113,8 @@ public class FuncionarioService {
         funcionario.setTelefone(dados.getTelefone());
         funcionario.setSalario(dados.getSalario());
         funcionario.setCidade(dados.getCidade());
-        atualizarStatus(funcionario, dados.getStatus());
+        funcionario.setDepartamento(dados.getDepartamento());
+        funcionario.setStatus(dados.getStatus());
         funcionario.setExperiencia(dados.getExperiencia());
         funcionario.setAnosExperiencia(dados.getAnosExperiencia());
         funcionario.setCargos(resolverCargos(dados.getCargos()));
@@ -111,6 +129,7 @@ public class FuncionarioService {
         if (campos.containsKey("nome")) funcionario.setNome((String) campos.get("nome"));
         if (campos.containsKey("telefone")) funcionario.setTelefone((String) campos.get("telefone"));
         if (campos.containsKey("cidade")) funcionario.setCidade((String) campos.get("cidade"));
+        if (campos.containsKey("departamento")) funcionario.setDepartamento((String) campos.get("departamento"));
         if (campos.containsKey("email")) {
             String email = (String) campos.get("email");
             validarEmailAtualizado(email, id);
@@ -122,7 +141,7 @@ public class FuncionarioService {
             validarSalario(salario);
             funcionario.setSalario(salario);
         }
-        if (campos.containsKey("status")) atualizarStatus(funcionario, (StatusFuncionario) campos.get("status"));
+        if (campos.containsKey("status")) funcionario.setStatus((StatusFuncionario) campos.get("status"));
         if (campos.containsKey("experiencia")) funcionario.setExperiencia((ExperienciaFuncionario) campos.get("experiencia"));
         if (campos.containsKey("anosExperiencia")) funcionario.setAnosExperiencia((Integer) campos.get("anosExperiencia"));
         if (campos.containsKey("cargoIds")) {
@@ -200,6 +219,18 @@ public class FuncionarioService {
         if (salario != null && salario.signum() < 0) throw new BusinessRuleException("O salário não pode ser negativo");
     }
 
+    @Transactional
+    public Funcionario atualizarStatus(Long id, StatusFuncionario novoStatus) {
+        Funcionario funcionario = buscarPorId(id);
+        validarTransicaoStatus(funcionario, novoStatus);
+        return repository.save(funcionario);
+    }
+
+    private String normalizarFiltro(String valor) {
+        if (valor == null || valor.isBlank()) return null;
+        return valor.trim();
+    }
+
     private ExperienciaFuncionario valorExperiencia(Object valor) {
         if (valor == null) throw new BusinessRuleException("A experiência não pode ser nula");
         try {
@@ -225,7 +256,7 @@ public class FuncionarioService {
         return ids;
     }
 
-    private void atualizarStatus(Funcionario funcionario, StatusFuncionario novoStatus) {
+    private void validarTransicaoStatus(Funcionario funcionario, StatusFuncionario novoStatus) {
         if (novoStatus == null || funcionario.getStatus() == novoStatus) return;
         StatusFuncionario atual = funcionario.getStatus();
         boolean permitida = switch (atual) {

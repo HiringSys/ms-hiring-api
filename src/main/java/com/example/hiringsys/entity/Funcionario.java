@@ -46,6 +46,9 @@ public class Funcionario {
     @Column(name = "cidade", length = 100)
     private String cidade;
 
+    @Column(name = "departamento", length = 100)
+    private String departamento;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
     private StatusFuncionario status;
@@ -110,6 +113,8 @@ public class Funcionario {
     public void setSalario(BigDecimal salario) { this.salario = salario; }
     public String getCidade() { return cidade; }
     public void setCidade(String cidade) { this.cidade = cidade; }
+    public String getDepartamento() { return departamento; }
+    public void setDepartamento(String departamento) { this.departamento = departamento; }
     public StatusFuncionario getStatus() { return status; }
     public void setStatus(StatusFuncionario status) { this.status = status; }
     public ExperienciaFuncionario getExperiencia() { return experiencia; }

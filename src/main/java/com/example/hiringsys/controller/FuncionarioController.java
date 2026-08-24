@@ -5,6 +5,7 @@ import com.example.hiringsys.dto.patch.FuncionarioPatchRequest;
 import com.example.hiringsys.dto.request.FuncionarioCreateRequest;
 import com.example.hiringsys.dto.request.FuncionarioUpdateRequest;
 import com.example.hiringsys.dto.response.FuncionarioResponse;
+import com.example.hiringsys.dto.response.FuncionarioIndicadoresResponse;
 import com.example.hiringsys.entity.Funcionario;
 import com.example.hiringsys.enums.ExperienciaFuncionario;
 import com.example.hiringsys.enums.StatusFuncionario;
@@ -44,13 +45,23 @@ public class FuncionarioController {
     }
 
     @GetMapping
-    public ResponseEntity<List<FuncionarioResponse>> listarTodos() {
-        List<FuncionarioResponse> funcionarios = service.listarTodos()
+    public ResponseEntity<List<FuncionarioResponse>> listarTodos(
+            @RequestParam(required = false) String nome,
+            @RequestParam(required = false) String cargo,
+            @RequestParam(required = false) StatusFuncionario status
+    ) {
+        List<FuncionarioResponse> funcionarios = service.pesquisar(nome, cargo, status)
                 .stream()
                 .map(mapper::toResponse)
                 .toList();
 
         return ResponseEntity.ok(funcionarios);
+    }
+
+    @GetMapping("/indicadores")
+    @Operation(summary = "Retorna os totais de candidatos por status")
+    public ResponseEntity<FuncionarioIndicadoresResponse> indicadores() {
+        return ResponseEntity.ok(service.indicadores());
     }
 
     @GetMapping("/{id}")
@@ -158,8 +169,7 @@ public class FuncionarioController {
             @PathVariable Long id,
             @Valid @RequestBody AtualizarStatusRequest request
     ) {
-        Map<String, Object> campoStatus = Map.of("status", request.status());
-        Funcionario atualizado = service.atualizarParcial(id, campoStatus);
+        Funcionario atualizado = service.atualizarStatus(id, request.status());
         return ResponseEntity.ok(mapper.toResponse(atualizado));
     }
 
