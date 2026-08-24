@@ -48,7 +48,12 @@ public class FuncionarioService {
 
     @Transactional(readOnly = true)
     public List<Funcionario> pesquisar(String nome, String cargo, StatusFuncionario status) {
-        return repository.pesquisar(normalizarFiltro(nome), normalizarFiltro(cargo), status);
+        String nomeNormalizado = normalizarFiltro(nome);
+        String cargoNormalizado = normalizarFiltro(cargo);
+        if (status == null) {
+            return repository.pesquisarSemStatus(nomeNormalizado, cargoNormalizado);
+        }
+        return repository.pesquisarPorStatus(nomeNormalizado, cargoNormalizado, status);
     }
 
     @Transactional(readOnly = true)
@@ -227,7 +232,7 @@ public class FuncionarioService {
     }
 
     private String normalizarFiltro(String valor) {
-        if (valor == null || valor.isBlank()) return null;
+        if (valor == null || valor.isBlank()) return "";
         return valor.trim();
     }
 
