@@ -21,6 +21,7 @@ public record FuncionarioUpdateRequest(
         @Size(max = 20) String telefone,
         @PositiveOrZero BigDecimal salario,
         @Size(max = 100) String cidade,
+        @Size(max = 100) String departamento,
         @NotNull StatusFuncionario status,
         @NotNull ExperienciaFuncionario experiencia,
         @NotNull @PositiveOrZero Integer anosExperiencia,

@@ -96,6 +96,7 @@ public class FuncionarioService {
         funcionario.setTelefone(dados.getTelefone());
         funcionario.setSalario(dados.getSalario());
         funcionario.setCidade(dados.getCidade());
+        funcionario.setDepartamento(dados.getDepartamento());
         atualizarStatus(funcionario, dados.getStatus());
         funcionario.setExperiencia(dados.getExperiencia());
         funcionario.setAnosExperiencia(dados.getAnosExperiencia());
@@ -111,6 +112,7 @@ public class FuncionarioService {
         if (campos.containsKey("nome")) funcionario.setNome((String) campos.get("nome"));
         if (campos.containsKey("telefone")) funcionario.setTelefone((String) campos.get("telefone"));
         if (campos.containsKey("cidade")) funcionario.setCidade((String) campos.get("cidade"));
+        if (campos.containsKey("departamento")) funcionario.setDepartamento((String) campos.get("departamento"));
         if (campos.containsKey("email")) {
             String email = (String) campos.get("email");
             validarEmailAtualizado(email, id);

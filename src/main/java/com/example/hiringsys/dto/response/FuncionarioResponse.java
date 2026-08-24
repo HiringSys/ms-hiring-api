@@ -8,6 +8,7 @@ import java.util.List;
 
 public record FuncionarioResponse(
         Long id, String nome, String email, String telefone, BigDecimal salario, String cidade,
+        String departamento,
         StatusFuncionario status, ExperienciaFuncionario experiencia, Integer anosExperiencia,
         List<CargoResponse> cargos, List<RedeResponse> redes,
         List<GrupoFuncionarioResponse> grupos, List<ArquivoFuncionarioResponse> arquivos,

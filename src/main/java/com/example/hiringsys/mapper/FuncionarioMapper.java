@@ -25,7 +25,7 @@ public class FuncionarioMapper {
 
     public Funcionario toEntity(FuncionarioCreateRequest request) {
         Funcionario funcionario = dadosComuns(request.nome(), request.email(), request.telefone(),
-                request.salario(), request.cidade(), request.cargoIds(), request.redes());
+                request.salario(), request.cidade(), request.departamento(), request.cargoIds(), request.redes());
         funcionario.setExperiencia(request.experiencia());
         funcionario.setAnosExperiencia(request.anosExperiencia());
         return funcionario;
@@ -33,7 +33,7 @@ public class FuncionarioMapper {
 
     public Funcionario toEntity(FuncionarioUpdateRequest request) {
         Funcionario funcionario = dadosComuns(request.nome(), request.email(), request.telefone(),
-                request.salario(), request.cidade(), request.cargoIds(), request.redes());
+                request.salario(), request.cidade(), request.departamento(), request.cargoIds(), request.redes());
         funcionario.setStatus(request.status());
         funcionario.setExperiencia(request.experiencia());
         funcionario.setAnosExperiencia(request.anosExperiencia());
@@ -47,6 +47,7 @@ public class FuncionarioMapper {
         if (request.telefone() != null) campos.put("telefone", request.telefone());
         if (request.salario() != null) campos.put("salario", request.salario());
         if (request.cidade() != null) campos.put("cidade", request.cidade());
+        if (request.departamento() != null) campos.put("departamento", request.departamento());
         if (request.status() != null) campos.put("status", request.status());
         if (request.experiencia() != null) campos.put("experiencia", request.experiencia());
         if (request.anosExperiencia() != null) campos.put("anosExperiencia", request.anosExperiencia());
@@ -71,13 +72,14 @@ public class FuncionarioMapper {
                 .toList();
         return new FuncionarioResponse(funcionario.getId(), funcionario.getNome(), funcionario.getEmail(),
                 funcionario.getTelefone(), funcionario.getSalario(), funcionario.getCidade(),
+                funcionario.getDepartamento(),
                 funcionario.getStatus(), funcionario.getExperiencia(), funcionario.getAnosExperiencia(),
                 cargos, redes, grupos, arquivos,
                 funcionario.getCriadoEm(), funcionario.getAtualizadoEm());
     }
 
     private Funcionario dadosComuns(String nome, String email, String telefone,
-                                    java.math.BigDecimal salario, String cidade,
+                                    java.math.BigDecimal salario, String cidade, String departamento,
                                     Set<Long> cargoIds, List<RedeRequest> redes) {
         Funcionario funcionario = new Funcionario();
         funcionario.setNome(nome);
@@ -85,6 +87,7 @@ public class FuncionarioMapper {
         funcionario.setTelefone(telefone);
         funcionario.setSalario(salario);
         funcionario.setCidade(cidade);
+        funcionario.setDepartamento(departamento);
         Set<Cargo> cargos = new LinkedHashSet<>();
         if (cargoIds != null) cargoIds.forEach(id -> { Cargo cargo = new Cargo(); cargo.setId(id); cargos.add(cargo); });
         funcionario.setCargos(cargos);

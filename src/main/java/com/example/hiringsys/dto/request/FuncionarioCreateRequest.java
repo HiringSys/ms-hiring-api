@@ -18,6 +18,7 @@ public record FuncionarioCreateRequest(
         @Size(max = 20) String telefone,
         @PositiveOrZero BigDecimal salario,
         @Size(max = 100) String cidade,
+        @Size(max = 100) String departamento,
         ExperienciaFuncionario experiencia,
         @PositiveOrZero Integer anosExperiencia,
         Set<@Positive Long> cargoIds,
