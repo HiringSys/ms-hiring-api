@@ -1,6 +1,7 @@
 package com.example.hiringsys.service;
 
 import com.example.hiringsys.dto.request.RedeRequest;
+import com.example.hiringsys.dto.response.FuncionarioIndicadoresResponse;
 import com.example.hiringsys.entity.Cargo;
 import com.example.hiringsys.entity.Funcionario;
 import com.example.hiringsys.entity.Grupo;
@@ -44,6 +45,22 @@ public class FuncionarioService {
 
     @Transactional(readOnly = true)
     public List<Funcionario> listarTodos() { return repository.findAll(); }
+
+    @Transactional(readOnly = true)
+    public List<Funcionario> pesquisar(String nome, String cargo, StatusFuncionario status) {
+        return repository.pesquisar(normalizarFiltro(nome), normalizarFiltro(cargo), status);
+    }
+
+    @Transactional(readOnly = true)
+    public FuncionarioIndicadoresResponse indicadores() {
+        return new FuncionarioIndicadoresResponse(
+                repository.count(),
+                repository.countByStatus(StatusFuncionario.EM_ANALISE),
+                repository.countByStatus(StatusFuncionario.APROVADO),
+                repository.countByStatus(StatusFuncionario.REPROVADO),
+                repository.countByStatus(StatusFuncionario.CONTRATADO)
+        );
+    }
 
     @Transactional(readOnly = true)
     public Funcionario buscarPorId(Long id) {
@@ -96,6 +113,7 @@ public class FuncionarioService {
         funcionario.setTelefone(dados.getTelefone());
         funcionario.setSalario(dados.getSalario());
         funcionario.setCidade(dados.getCidade());
+        funcionario.setDepartamento(dados.getDepartamento());
         atualizarStatus(funcionario, dados.getStatus());
         funcionario.setExperiencia(dados.getExperiencia());
         funcionario.setAnosExperiencia(dados.getAnosExperiencia());
@@ -111,6 +129,7 @@ public class FuncionarioService {
         if (campos.containsKey("nome")) funcionario.setNome((String) campos.get("nome"));
         if (campos.containsKey("telefone")) funcionario.setTelefone((String) campos.get("telefone"));
         if (campos.containsKey("cidade")) funcionario.setCidade((String) campos.get("cidade"));
+        if (campos.containsKey("departamento")) funcionario.setDepartamento((String) campos.get("departamento"));
         if (campos.containsKey("email")) {
             String email = (String) campos.get("email");
             validarEmailAtualizado(email, id);
@@ -198,6 +217,11 @@ public class FuncionarioService {
 
     private void validarSalario(BigDecimal salario) {
         if (salario != null && salario.signum() < 0) throw new BusinessRuleException("O salário não pode ser negativo");
+    }
+
+    private String normalizarFiltro(String valor) {
+        if (valor == null || valor.isBlank()) return null;
+        return valor.trim();
     }
 
     private ExperienciaFuncionario valorExperiencia(Object valor) {

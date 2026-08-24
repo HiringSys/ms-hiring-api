@@ -19,6 +19,7 @@ public record FuncionarioPatchRequest(
         @Size(max = 20) String telefone,
         @PositiveOrZero BigDecimal salario,
         @Size(max = 100) String cidade,
+        @Size(max = 100) String departamento,
         StatusFuncionario status,
         ExperienciaFuncionario experiencia,
         @PositiveOrZero Integer anosExperiencia,

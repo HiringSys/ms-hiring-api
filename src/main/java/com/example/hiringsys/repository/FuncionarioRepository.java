@@ -39,4 +39,21 @@ public interface FuncionarioRepository extends JpaRepository<Funcionario, Long> 
     @EntityGraph(attributePaths = {"cargos", "redes", "grupos", "grupos.grupo", "arquivos"})
     @Query("select distinct f from Funcionario f join f.grupos g where g.grupo.id = :grupoId")
     List<Funcionario> findByGrupoId(@Param("grupoId") Long grupoId);
+
+    @EntityGraph(attributePaths = {"cargos", "redes", "grupos", "grupos.grupo", "arquivos"})
+    @Query("""
+            select distinct f from Funcionario f
+            left join f.cargos c
+            where (:nome is null or lower(f.nome) like lower(concat('%', :nome, '%')))
+              and (:cargo is null or lower(c.nome) like lower(concat('%', :cargo, '%')))
+              and (:status is null or f.status = :status)
+            order by f.nome
+            """)
+    List<Funcionario> pesquisar(
+            @Param("nome") String nome,
+            @Param("cargo") String cargo,
+            @Param("status") StatusFuncionario status
+    );
+
+    long countByStatus(StatusFuncionario status);
 }
