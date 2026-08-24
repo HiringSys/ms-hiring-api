@@ -25,6 +25,6 @@ public record FuncionarioUpdateRequest(
         @NotNull StatusFuncionario status,
         @NotNull ExperienciaFuncionario experiencia,
         @NotNull @PositiveOrZero Integer anosExperiencia,
-        @NotEmpty Set<@Positive Long> cargoIds,
+        @NotNull @Size(min = 1) Set<@Positive Long> cargoIds,
         @NotNull List<@Valid RedeRequest> redes
 ) {}
