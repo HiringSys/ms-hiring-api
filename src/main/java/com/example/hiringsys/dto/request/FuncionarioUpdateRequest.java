@@ -5,7 +5,6 @@ import com.example.hiringsys.enums.StatusFuncionario;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -25,6 +24,6 @@ public record FuncionarioUpdateRequest(
         @NotNull StatusFuncionario status,
         @NotNull ExperienciaFuncionario experiencia,
         @NotNull @PositiveOrZero Integer anosExperiencia,
-        @NotEmpty Set<@Positive Long> cargoIds,
+        @NotNull @Size(min = 1) Set<@Positive Long> cargoIds,
         @NotNull List<@Valid RedeRequest> redes
 ) {}
