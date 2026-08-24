@@ -114,7 +114,7 @@ public class FuncionarioService {
         funcionario.setSalario(dados.getSalario());
         funcionario.setCidade(dados.getCidade());
         funcionario.setDepartamento(dados.getDepartamento());
-        atualizarStatus(funcionario, dados.getStatus());
+        funcionario.setStatus(dados.getStatus());
         funcionario.setExperiencia(dados.getExperiencia());
         funcionario.setAnosExperiencia(dados.getAnosExperiencia());
         funcionario.setCargos(resolverCargos(dados.getCargos()));
@@ -141,7 +141,7 @@ public class FuncionarioService {
             validarSalario(salario);
             funcionario.setSalario(salario);
         }
-        if (campos.containsKey("status")) atualizarStatus(funcionario, (StatusFuncionario) campos.get("status"));
+        if (campos.containsKey("status")) funcionario.setStatus((StatusFuncionario) campos.get("status"));
         if (campos.containsKey("experiencia")) funcionario.setExperiencia((ExperienciaFuncionario) campos.get("experiencia"));
         if (campos.containsKey("anosExperiencia")) funcionario.setAnosExperiencia((Integer) campos.get("anosExperiencia"));
         if (campos.containsKey("cargoIds")) {
@@ -219,6 +219,13 @@ public class FuncionarioService {
         if (salario != null && salario.signum() < 0) throw new BusinessRuleException("O salário não pode ser negativo");
     }
 
+    @Transactional
+    public Funcionario atualizarStatus(Long id, StatusFuncionario novoStatus) {
+        Funcionario funcionario = buscarPorId(id);
+        validarTransicaoStatus(funcionario, novoStatus);
+        return repository.save(funcionario);
+    }
+
     private String normalizarFiltro(String valor) {
         if (valor == null || valor.isBlank()) return null;
         return valor.trim();
@@ -249,7 +256,7 @@ public class FuncionarioService {
         return ids;
     }
 
-    private void atualizarStatus(Funcionario funcionario, StatusFuncionario novoStatus) {
+    private void validarTransicaoStatus(Funcionario funcionario, StatusFuncionario novoStatus) {
         if (novoStatus == null || funcionario.getStatus() == novoStatus) return;
         StatusFuncionario atual = funcionario.getStatus();
         boolean permitida = switch (atual) {

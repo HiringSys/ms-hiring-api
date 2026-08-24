@@ -61,6 +61,8 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, "/cargos/**")
                         .hasAnyAuthority("SCOPE_RH", "SCOPE_ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/cargos")
+                        .hasAnyAuthority("SCOPE_RH", "SCOPE_ADMIN")
                         .requestMatchers("/cargos/**")
                         .hasAuthority("SCOPE_ADMIN")
                         .requestMatchers("/funcionarios/**", "/grupos/**", "/stages/**")
