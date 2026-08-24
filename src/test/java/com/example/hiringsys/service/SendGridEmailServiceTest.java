@@ -41,6 +41,10 @@ class SendGridEmailServiceTest {
                 new ByteArrayResource(
                         "<html><strong>{{NOVA_SENHA}}</strong></html>"
                                 .getBytes(StandardCharsets.UTF_8)
+                ),
+                new ByteArrayResource(
+                        "<html>{{NOME_CANDIDATO}} - {{NOME_PROCESSO}}</html>"
+                                .getBytes(StandardCharsets.UTF_8)
                 )
         );
     }
@@ -91,6 +95,41 @@ class SendGridEmailServiceTest {
     }
 
     @Test
+    void enviaEmailDeAprovacaoComDadosDoCandidato() throws Exception {
+        when(httpResponse.statusCode()).thenReturn(202);
+        when(httpClient.send(
+                any(HttpRequest.class),
+                org.mockito.ArgumentMatchers.<HttpResponse.BodyHandler<String>>any()
+        )).thenReturn(httpResponse);
+
+        service.enviarAprovacao(
+                "candidato@email.com",
+                "Maria da Silva",
+                "Backend Java"
+        );
+
+        ArgumentCaptor<HttpRequest> requestCaptor = ArgumentCaptor.forClass(HttpRequest.class);
+        verify(httpClient).send(
+                requestCaptor.capture(),
+                org.mockito.ArgumentMatchers.<HttpResponse.BodyHandler<String>>any()
+        );
+        assertThat(requestCaptor.getValue().uri()).isEqualTo(
+                java.net.URI.create("https://api.sendgrid.com/v3/mail/send")
+        );
+        String payload = service.montarPayloadAprovacao(
+                "candidato@email.com",
+                "Maria da Silva",
+                "Backend Java"
+        );
+        assertThat(payload)
+                .contains("candidato@email.com")
+                .contains("Maria da Silva")
+                .contains("Backend Java")
+                .doesNotContain("{{NOME_CANDIDATO}}")
+                .doesNotContain("{{NOME_PROCESSO}}");
+    }
+
+    @Test
     void rejeitaConfiguracaoSemApiKey() throws Exception {
         SendGridEmailService semApiKey = new SendGridEmailService(
                 httpClient,
@@ -98,6 +137,7 @@ class SendGridEmailServiceTest {
                 "",
                 "contato@hiringsys.local",
                 "HiringSys",
+                new ByteArrayResource("template".getBytes(StandardCharsets.UTF_8)),
                 new ByteArrayResource("template".getBytes(StandardCharsets.UTF_8))
         );
 
